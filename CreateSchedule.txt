@@ -1,0 +1,163 @@
+Option Explicit
+Sub CreateSchedule()
+    Dim numTasks As Integer
+    Dim Tasks As Range
+    Dim start As Range
+    Dim height As Integer
+    Dim taskData As Range
+    Dim cell As Range
+    Dim scheduleRange As Range
+    Dim schStart As Range
+    Dim cIndex As Integer
+    Dim i As Integer
+    Dim time As String
+    Dim task As String
+    Dim controlvariable As Range
+    Dim writeTask As Boolean
+    Dim colorCount As Integer
+    
+    wsInput.Activate
+    
+    'Set variables
+    numTasks = wsInput.Range("a4", wsInput.Range("A4").End(xlDown)).Rows.Count
+    Set Tasks = wsInput.Range("A4", wsInput.Cells(numTasks + 3, 1))
+    Set start = wsInput.Range("A4")
+    Set taskData = wsInput.Range(start, Tasks.End(xlDown).Offset(0, 5))
+    Set scheduleRange = wsSchedule.Range("B2", "B66")
+    Set schStart = wsSchedule.Range("b2")
+    cIndex = 33
+    i = 0
+    
+    'prioritize the tasks with a time by giving them order #0
+    For Each cell In Tasks.Offset(0, 2)
+        If cell.Value = "" Then
+            cell.Value = 0
+        End If
+    Next cell
+    
+    'sort the tasks in order
+    wsInput.Sort.SortFields.Clear
+        taskData.Sort Key1:=Range("C4")
+    wsInput.Sort.SortFields.Clear
+        
+    wsSchedule.Activate
+    'Put time tasks on schedule
+    For Each cell In Tasks
+        If cell.Offset(0, 3).Value <> "" Then
+            height = cell.Offset(0, 1).Value / 15
+             time = cell.Offset(0, 3).Value
+             'ROUND TO NEAREST 15 MINUTES
+                Select Case Right(time, 2)
+                Case 0 To 7
+                   time = Left(time, Len(time) - 2) & "00"
+                Case 7 To 22
+                   time = Left(time, Len(time) - 2) & "15"
+                Case 22 To 37
+                   time = Left(time, Len(time) - 2) & "30"
+                Case 37 To 52
+                   time = Left(time, Len(time) - 2) & "45"
+                Case Is > 52
+                   time = CInt(Left(time, Len(time) - 2)) + 1 & "00"
+                End Select
+             task = cell.Value
+            For Each controlvariable In scheduleRange.Offset(0, -1)
+                If controlvariable.Value = time Then
+                    controlvariable.Offset(0, 1).Value = task
+                    Range(controlvariable.Offset(0, 1), controlvariable.Offset(height - 1, 1)).Interior.ColorIndex = cIndex
+                    cIndex = cIndex + 1
+                End If
+            Next controlvariable
+        End If
+    Next cell
+
+    'Put all other tasks on the schedule
+    'if colorindex<>white??? or null???
+    For Each cell In Tasks
+        colorCount = 1
+        If cell.Offset(0, 2).Value > 0 Then
+            height = cell.Offset(0, 1).Value / 15
+            'time = cell.Offset(0, 3).Value
+            task = cell.Value
+            
+            For Each controlvariable In scheduleRange
+               Do
+           'look at the cell
+           'does it need a label? write the label in.
+           'is it blank? color it.
+           
+                If (controlvariable.Interior.ColorIndex) = -4142 Then
+                        controlvariable.Interior.ColorIndex = cIndex
+                        colorCount = colorCount + 1
+'                        If writeTask = False Then
+'                            controlvariable.Value = task
+'                            writeTask = True
+'                        End If
+'                End If
+'                Loop Until colorCount = height
+'                Exit For
+'                Next controlvariable
+                
+            End If
+            cIndex = cIndex + 1
+            
+    Next cell
+End Sub
+
+Sub Reset()
+wsSchedule.Range("b1:b400").Clear
+End Sub
+
+Sub quicktest()
+MsgBox wsSchedule.Range("B7").Interior.ColorIndex
+End Sub
+
+Sub active()
+'Public StopIt As Boolean
+'Public ResetIt As Boolean
+'Public LastTime
+'Private Sub CommandButton1_Click()
+'Dim StartTime, FinishTime, TotalTime, PauseTime
+'StopIt = False
+'ResetIt = False
+'If Range("C2") = 0 Then
+'  StartTime = Timer
+'  PauseTime = 0
+'  LastTime = 0
+'Else
+'  StartTime = 0
+'  PauseTime = Timer
+'End If
+'StartIt:
+'  DoEvents
+'  If StopIt = True Then
+'    LastTime = TotalTime
+'    Exit Sub
+'  Else
+'    FinishTime = Timer
+'    TotalTime = FinishTime - StartTime + LastTime - PauseTime
+'    TTime = TotalTime * 100
+'    HM = TTime Mod 100
+'    TTime = TTime \ 100
+'    hh = TTime \ 3600
+'    TTime = TTime Mod 3600
+'    MM = TTime \ 60
+'    SS = TTime Mod 60
+'    Range("C2").Value = Format(hh, "00") & ":" & Format(MM, "00") & ":" & Format(SS, "00") & "." & Format(HM, "00")
+'    If ResetIt = True Then
+'      Range("C2") = Format(0, "00") & ":" & Format(0, "00") & ":" & Format(0, "00") & "." & Format(0, "00")
+'      LastTime = 0
+'      PauseTime = 0
+'      End
+'    End If
+'    GoTo StartIt
+'  End If
+'End Sub
+'Private Sub CommandButton2_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+'  StopIt = True
+'End Sub
+'Private Sub CommandButton3_Click()
+'  Range("C2").Value = Format(0, "00") & ":" & Format(0, "00") & ":" & Format(0, "00") & "." & Format(0, "00")
+'  LastTime = 0
+'  ResetIt = True
+End Sub
+End Sub
